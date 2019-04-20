@@ -34,7 +34,7 @@ def save_new_product_to_json(brand, product_id, company_name, accesory_list):
     data = json.load(open('database/products.json'))
     if brand in data:
         if product_id in data[brand]:
-            data[brand][product_id].update(new_product)
+            data[brand][product_id] = new_product
         else:
             data[brand].update(new_dict)
     else:
@@ -42,3 +42,18 @@ def save_new_product_to_json(brand, product_id, company_name, accesory_list):
 
     with open('database/products.json', 'w') as json_file:
         json.dump(data, json_file)
+
+
+def load_brands_json():
+    data = json.load(open('database/products.json'))
+    result = []
+    for entry in data:
+        result.append(entry)
+
+    return result
+
+def brand_exists(brand):
+    data = json.load(open('database/products.json'))
+    if brand in data:
+        return True
+    return False

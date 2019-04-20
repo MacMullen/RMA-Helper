@@ -16,6 +16,7 @@ def center(main_window: QMainWindow):
 class MainWindow(QMainWindow):
     def __init__(self):
         self.companies = load_companies_json()
+        self.brands = load_brands_json()
         super(MainWindow, self).__init__()
         self.resize(1280, 720)
         self.setWindowTitle("PyBank")
@@ -99,6 +100,8 @@ class MainWindow(QMainWindow):
         save_button = QPushButton("Save")
         save_button.clicked.connect(self.save_new_product)
         self.new_prod_company_combo_box.addItems(self.companies)
+        add_button.clicked.connect(self.new_prod_add_acc)
+        self.new_prod_acc_edit_box.returnPressed.connect(self.new_prod_add_acc)
 
         base_layout.addWidget(brand_label)
         base_layout.addWidget(self.new_prod_brand_edit_box)
@@ -251,10 +254,21 @@ class MainWindow(QMainWindow):
 
         accesory_list = []
         for i in range(0, self.new_prod_accesories_list.count()):
-            accesory_list.append(self.new_prod_accesories_list.itemAt(i))
+            accesory_list.append(self.new_prod_accesories_list.item(i).text())
 
         save_new_product_to_json(self.new_prod_brand_edit_box.text(), self.new_prod_product_edit_box.text(),
                                  self.new_prod_company_combo_box.currentText(), accesory_list)
+
+        if not brand_exists(self.new_prod_brand_edit_box.text()):
+            self.brands.append(self.new_prod_brand_edit_box.text())
+
+        self.new_prod_brand_edit_box.setText("")
+        self.new_prod_product_edit_box.setText("")
+        self.new_prod_accesories_list.clear()
+
+    def new_prod_add_acc(self):
+        self.new_prod_accesories_list.addItem(self.new_prod_acc_edit_box.text())
+        self.new_prod_acc_edit_box.setText("")
 
 
 if __name__ == "__main__":
