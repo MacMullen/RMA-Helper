@@ -97,6 +97,8 @@ class MainWindow(QMainWindow):
         add_button = QPushButton("Add")
         self.new_prod_accesories_list = QListWidget()
         save_button = QPushButton("Save")
+        save_button.clicked.connect(self.save_new_product)
+        self.new_prod_company_combo_box.addItems(self.companies)
 
         base_layout.addWidget(brand_label)
         base_layout.addWidget(self.new_prod_brand_edit_box)
@@ -218,12 +220,14 @@ class MainWindow(QMainWindow):
             self.new_company_name_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
             return
 
+        self.new_prod_company_combo_box.addItem(self.new_company_name_edit_box.text())
+
         save_to_companies_json(self.new_company_name_edit_box.text(),
-                                        self.new_company_address_edit_box.text(),
-                                        self.new_company_telephone_edit_box.text(),
-                                        self.new_company_contact_edit_box.text(),
-                                        self.open_hour.text(),
-                                        self.close_hour.text())
+                               self.new_company_address_edit_box.text(),
+                               self.new_company_telephone_edit_box.text(),
+                               self.new_company_contact_edit_box.text(),
+                               self.open_hour.text(),
+                               self.close_hour.text())
 
         self.new_company_name_edit_box.setText("")
         self.new_company_name_edit_box.setStyleSheet("background: white;")
@@ -232,6 +236,25 @@ class MainWindow(QMainWindow):
         self.new_company_contact_edit_box.setText("")
         self.open_hour.setTime(QTime(0, 0, 0, 0))
         self.close_hour.setTime(QTime(0, 0, 0, 0))
+
+    def save_new_product(self):
+        if self.new_prod_brand_edit_box.text() == "":
+            self.new_prod_brand_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            return
+        if self.new_prod_product_edit_box.text() == "":
+            self.new_prod_product_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            return
+        if self.new_prod_product_edit_box.text() == "" and self.new_prod_brand_edit_box.text() == "":
+            self.new_prod_product_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            self.new_prod_brand_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            return
+
+        accesory_list = []
+        for i in range(0, self.new_prod_accesories_list.count()):
+            accesory_list.append(self.new_prod_accesories_list.itemAt(i))
+
+        save_new_product_to_json(self.new_prod_brand_edit_box.text(), self.new_prod_product_edit_box.text(),
+                                 self.new_prod_company_combo_box.currentText(), accesory_list)
 
 
 if __name__ == "__main__":
