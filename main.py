@@ -2,6 +2,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 import sys
+import uuid
 from utilties import *
 import os
 
@@ -39,6 +40,8 @@ class MainWindow(QMainWindow):
         self.main_widget.addWidget(self.new_company_page())
         self.main_widget.addWidget(self.invoice_page())
 
+        self.add_prod_uuid_edit_box.setText(generate_uuid())
+
         self.show()
 
     def add_product_page(self):
@@ -60,8 +63,12 @@ class MainWindow(QMainWindow):
         self.add_prod_acc_text_box = QTextEdit()
         uuid_label = QLabel("UUID")
         self.add_prod_uuid_edit_box = QLineEdit()
+        self.add_prod_uuid_edit_box.setReadOnly(True)
         save_button = QPushButton("Save")
 
+        self.add_prod_brand_combo_box.addItems(load_brands_json())
+        self.add_prod_brand_combo_box.setCurrentIndex(-1)
+        self.add_prod_brand_combo_box.activated.connect(self.show_products)
         base_layout.addWidget(brand_label)
         base_layout.addWidget(self.add_prod_brand_combo_box)
         base_layout.addWidget(product_label)
@@ -270,6 +277,9 @@ class MainWindow(QMainWindow):
         self.new_prod_accesories_list.addItem(self.new_prod_acc_edit_box.text())
         self.new_prod_acc_edit_box.setText("")
 
+    def show_products(self):
+        if self.add_prod_product_combo_box.count() == 0:
+            self.add_prod_product_combo_box.addItems(show_products_from(self.add_prod_brand_combo_box.currentText()))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

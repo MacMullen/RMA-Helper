@@ -1,8 +1,10 @@
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from uuid import uuid4
 import sys
 import json
+
 import os
 
 
@@ -52,8 +54,33 @@ def load_brands_json():
 
     return result
 
+
 def brand_exists(brand):
     data = json.load(open('database/products.json'))
     if brand in data:
         return True
     return False
+
+
+def generate_uuid():
+    uuid = str(uuid4())
+    data = json.load(open('database/uuid.json'))
+    while uuid in data:
+        uuid = str(uuid4())
+    return uuid
+
+
+def save_uuid(uuid):
+    data = json.load(open('database/uuid.json'))
+    data[uuid] = ""
+    with open('database/uuid.json', 'w') as json_file:
+        json.dump(data, json_file)
+
+
+def show_products_from(brand):
+    data = json.load(open('database/products.json'))
+    result = []
+    for entry in data[brand]:
+        result.append(entry)
+
+    return result
