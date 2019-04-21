@@ -142,7 +142,7 @@ def read_csv_file(status, company):
     return model
 
 
-def generate_pdf(brand, status):
+def generate_pdf(company, status):
     # Source: https://stackoverflow.com/questions/48863462/writing-full-csv-table-to-pdf-in-python
     with open('database/archive/active/ServiTech.csv', "r") as csvfile:
         data = []
@@ -161,21 +161,14 @@ def generate_pdf(brand, status):
     styleNormal = styles['Normal']
 
     # PDF Text - Content
-    # line1 = 'LYIT MOBILE FORENSICS DIVISION'
-    # line2 = 'Date: {}'.format(datetime.datetime.now().strftime("%d-%m-%y"))
-    # line3 = 'Case Number: 10'
-    # line4 = 'This forensic report on sms card data has been compiled by the forensic'
-    # line5 = 'examiner in conclusion to the investigation into the RTA'
-    # line6 = 'case which occurred on 23/01/2018.'
-    #
-    # elements.append(Paragraph(line1, styleNormal))
-    # elements.append(Paragraph(line2, styleNormal))
-    # elements.append(Paragraph(line3, styleNormal))
-    # elements.append(Spacer(inch, .25 * inch))
-    # elements.append(Paragraph(line4, styleNormal))
-    # elements.append(Paragraph(line5, styleNormal))
-    # elements.append(Paragraph(line6, styleNormal))
-    # elements.append(Spacer(inch, .25 * inch))
+    line1 = 'BM WEB SA'
+    line2 = 'Date: {}'.format(datetime.datetime.now().strftime("%d-%m-%y"))
+    line3 = 'REMITO INGRESO DE EQUIPOS PARA RMA - {}'.format(company)
+
+    elements.append(Paragraph(line1, styleNormal))
+    elements.append(Paragraph(line2, styleNormal))
+    elements.append(Paragraph(line3, styleNormal))
+    elements.append(Spacer(inch, .25 * inch))
 
     # PDF Table
     # PDF Table - Styles
@@ -197,16 +190,17 @@ def generate_pdf(brand, status):
         ('ALIGN', column3[0], column3[1], 'LEFT'),
         ('ALIGN', column4[0], column4[1], 'LEFT'),
         ('ALIGN', column5[0], column5[1], 'LEFT'),
+        ('INNERGRID', (0, 1), (-1, -1), 0.25, colors.black)
     ])
 
     # PDF Table - Column Widths
     colWidths = [
-        2 * cm,  # Column 0
-        2 * cm,  # Column 1
-        4 * cm,  # Column 2
-        5 * cm,  # Column 3
-        1.5 * cm,  # Column 4
-        3 * cm,  # Column 5
+        3 * cm,  # Column 0
+        3 * cm,  # Column 1
+        3.5 * cm,  # Column 2
+        4 * cm,  # Column 3
+        2 * cm,  # Column 4
+        4 * cm,  # Column 5
     ]
 
     # PDF Table - Strip '[]() and add word wrap to column 5
@@ -222,14 +216,26 @@ def generate_pdf(brand, status):
     t.setStyle(table_style)
     elements.append(t)
 
+    # Botton part of the file.
+    line4 = 'Firma:'
+    line5 = 'Aclaracion:'
+    line6 = 'DNI'
+
+    elements.append(Spacer(inch, .75 * inch))
+    elements.append(Paragraph(line4, styleNormal))
+    elements.append(Spacer(inch, .15 * inch))
+    elements.append(Paragraph(line5, styleNormal))
+    elements.append(Spacer(inch, .15 * inch))
+    elements.append(Paragraph(line6, styleNormal))
+    elements.append(Spacer(inch, .15 * inch))
+
     # Generate PDF
     archivo_pdf = SimpleDocTemplate(
         'SMS Data Report.pdf',
         pagesize=A4,
-        rightMargin=20,
-        leftMargin=20,
+        rightMargin=10,
+        leftMargin=10,
         topMargin=40,
         bottomMargin=28)
     archivo_pdf.build(elements)
     os.startfile('SMS Data Report.pdf')
-    print('SMS Data Forensic Report Generated!')
