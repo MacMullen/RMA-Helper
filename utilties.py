@@ -190,7 +190,7 @@ def generate_pdf(company, status):
         ('ALIGN', column3[0], column3[1], 'LEFT'),
         ('ALIGN', column4[0], column4[1], 'LEFT'),
         ('ALIGN', column5[0], column5[1], 'LEFT'),
-        ('INNERGRID', (0, 1), (-1, -1), 0.25, colors.black)
+        ('GRID', (0, 1), (-1, -1), 0.25, colors.black)
     ])
 
     # PDF Table - Column Widths
@@ -204,7 +204,9 @@ def generate_pdf(company, status):
     ]
 
     # PDF Table - Strip '[]() and add word wrap to column 5
+    count = 0
     for index, row in enumerate(data):
+        count += 1
         for col, val in enumerate(row):
             # if col != 5 or index == 0 or col != 4:
             #     data[index][col] = val.strip("'[]()")
@@ -217,25 +219,33 @@ def generate_pdf(company, status):
     elements.append(t)
 
     # Botton part of the file.
-    line4 = 'Firma:'
-    line5 = 'Aclaracion:'
-    line6 = 'DNI'
+    colWidths = [9.5 * cm, 9.5 * cm]
+    rowHeights = [1 * cm, 3 * cm, 1.5 * cm, 1.5 * cm]
+    deliver_header_line = Paragraph("""<font size=15><b>RECIBE</b></font>""", styles['Normal'])
+    pick_header_line = Paragraph("""<font size=15><b>ENTREGA</b></font>""", styles['Normal'])
+    signature_line = Paragraph("""<b>FIRMA:</b>""", styles['Normal'])
+    text_line = Paragraph("""<b>ACLARACION:</b>""", styles['Normal'])
+    document_line = Paragraph("""<b>DNI:</b>""", styles['Normal'])
+    sign_table = [[pick_header_line, deliver_header_line], [signature_line, signature_line], [text_line, text_line],
+                  [document_line, document_line]]
+    bottom_table = Table(sign_table, colWidths=colWidths, rowHeights=rowHeights)
+    bottom_table.setStyle((TableStyle([('ALIGN', (0, 1), (0, 1), 'RIGHT'),
+                                       ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                                       ('GRID', (0, 1), (-1, -1), 0.25, colors.black)])))
+    line4 = """<font size=12><b>Total: {}</b></font>""".format(count)
 
-    elements.append(Spacer(inch, .75 * inch))
+    elements.append(Spacer(inch, .30 * inch))
     elements.append(Paragraph(line4, styleNormal))
-    elements.append(Spacer(inch, .15 * inch))
-    elements.append(Paragraph(line5, styleNormal))
-    elements.append(Spacer(inch, .15 * inch))
-    elements.append(Paragraph(line6, styleNormal))
-    elements.append(Spacer(inch, .15 * inch))
+    elements.append(Spacer(inch, .30 * inch))
+    elements.append(bottom_table)
 
     # Generate PDF
     archivo_pdf = SimpleDocTemplate(
-        'SMS Data Report.pdf',
+        '{}_{}_invoice.pdf'.format(company, datetime.datetime.now().strftime("%d-%m-%y")),
         pagesize=A4,
-        rightMargin=10,
-        leftMargin=10,
+        rightMargin=20,
+        leftMargin=20,
         topMargin=40,
         bottomMargin=28)
     archivo_pdf.build(elements)
-    os.startfile('SMS Data Report.pdf')
+    os.startfile('{}_{}_invoice.pdf'.format(company, datetime.datetime.now().strftime("%d-%m-%y")))
