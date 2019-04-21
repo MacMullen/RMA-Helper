@@ -102,7 +102,7 @@ def show_accesories_from(product, brand):
     return result
 
 
-def save_product_to_csv(brand, product, problem, description, sn, missing_acc, uuid):
+def save_product_to_csv(brand, product, problem, sn, missing_acc, uuid):
     data = json.load(open('database/products.json'))
     company_name = data[brand][product]["company"]
     if not os.path.isdir('database/archive'):
@@ -110,11 +110,11 @@ def save_product_to_csv(brand, product, problem, description, sn, missing_acc, u
         os.mkdir('database/archive/active')
     if not os.path.isfile('database/archive/active/' + company_name + '.csv'):
         file = open('database/archive/active/' + company_name + '.csv', "w+")
-        file.write("UUID,Brand,Product,Problem,Description,Serial Number,Missing Accesories\n")
+        file.write("UUID,Brand,Product,Problem,Missing Accesories,Serial Number\n")
         file.close()
-    with open('database/archive/active/' + company_name + '.csv', 'a') as csv_file:
+    with open('database/archive/active/' + company_name + '.csv', 'a', newline='') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow([uuid, brand, product, problem, description, sn, missing_acc])
+        csv_writer.writerow([uuid, brand, product, problem, missing_acc, sn])
 
     save_uuid(uuid)
 
@@ -161,9 +161,9 @@ def generate_pdf(company, status):
     styleNormal = styles['Normal']
 
     # PDF Text - Content
-    line1 = 'BM WEB SA'
-    line2 = 'Date: {}'.format(datetime.datetime.now().strftime("%d-%m-%y"))
-    line3 = 'REMITO INGRESO DE EQUIPOS PARA RMA - {}'.format(company)
+    line1 = '<font size=10><b>BM WEB SA</b></font>'
+    line2 = '<b>Fecha: {}</b>'.format(datetime.datetime.now().strftime("%d-%m-%y"))
+    line3 = 'REMITO INGRESO DE EQUIPOS PARA RMA - <b>{}</b>'.format(company)
 
     elements.append(Paragraph(line1, styleNormal))
     elements.append(Paragraph(line2, styleNormal))
@@ -180,7 +180,6 @@ def generate_pdf(company, status):
     column2 = [(2, 0), (2, -1)]
     column3 = [(3, 0), (3, -1)]
     column4 = [(4, 0), (4, -1)]
-    column5 = [(5, 0), (5, -1)]
     table_style = TableStyle([
         ('VALIGN', all_cells[0], all_cells[1], 'TOP'),
         ('LINEBELOW', header[0], header[1], 1, colors.black),
@@ -189,7 +188,6 @@ def generate_pdf(company, status):
         ('ALIGN', column2[0], column2[1], 'LEFT'),
         ('ALIGN', column3[0], column3[1], 'LEFT'),
         ('ALIGN', column4[0], column4[1], 'LEFT'),
-        ('ALIGN', column5[0], column5[1], 'LEFT'),
         ('GRID', (0, 1), (-1, -1), 0.25, colors.black)
     ])
 
@@ -197,10 +195,9 @@ def generate_pdf(company, status):
     colWidths = [
         3 * cm,  # Column 0
         3 * cm,  # Column 1
-        3.5 * cm,  # Column 2
-        4 * cm,  # Column 3
-        2 * cm,  # Column 4
-        4 * cm,  # Column 5
+        5.5 * cm,  # Column 2
+        4 * cm,  # Column 4
+        3 * cm,  # Column 5
     ]
 
     # PDF Table - Strip '[]() and add word wrap to column 5
@@ -208,9 +205,6 @@ def generate_pdf(company, status):
     for index, row in enumerate(data):
         count += 1
         for col, val in enumerate(row):
-            # if col != 5 or index == 0 or col != 4:
-            #     data[index][col] = val.strip("'[]()")
-            # else:
             data[index][col] = Paragraph(val, styles['Normal'])
 
     # Add table to elements

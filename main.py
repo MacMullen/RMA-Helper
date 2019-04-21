@@ -51,9 +51,7 @@ class MainWindow(QMainWindow):
         product_label = QLabel("Product")
         self.add_prod_product_combo_box = QComboBox()
         problem_label = QLabel("Problem")
-        self.add_prod_problem_edit_box = QLineEdit()
-        description_label = QLabel("Description")
-        self.add_prod_description_text_box = QTextEdit()
+        self.add_prod_problem_edit_box = QTextEdit()
         sn_label = QLabel("Serial Number")
         self.add_prod_sn_edit_box = QLineEdit()
         acc_label = QLabel("Accesories")
@@ -75,8 +73,6 @@ class MainWindow(QMainWindow):
         base_layout.addWidget(self.add_prod_product_combo_box)
         base_layout.addWidget(problem_label)
         base_layout.addWidget(self.add_prod_problem_edit_box)
-        base_layout.addWidget(description_label)
-        base_layout.addWidget(self.add_prod_description_text_box)
         base_layout.addWidget(sn_label)
         base_layout.addWidget(self.add_prod_sn_edit_box)
         base_layout.addWidget(acc_label)
@@ -302,7 +298,7 @@ class MainWindow(QMainWindow):
         if self.add_prod_brand_combo_box.currentIndex() == -1:
             self.add_prod_brand_combo_box.setStyleSheet("background: rgba(255,0,0,0.2);")
             return
-        if self.add_prod_problem_edit_box.text() == "":
+        if self.add_prod_problem_edit_box.toPlainText() == "":
             self.add_prod_problem_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
             return
 
@@ -310,13 +306,11 @@ class MainWindow(QMainWindow):
         for i in range(0, self.add_prod_acc_text_box.count()):
             if self.add_prod_acc_text_box.item(i).checkState() == Qt.Unchecked:
                 missing_acc += (self.add_prod_acc_text_box.item(i).text()) + ", "
-
         save_product_to_csv(self.add_prod_brand_combo_box.currentText(), self.add_prod_product_combo_box.currentText(),
-                            self.add_prod_problem_edit_box.text(), self.add_prod_description_text_box.toPlainText(),
+                            self.add_prod_problem_edit_box.toPlainText(),
                             self.add_prod_sn_edit_box.text(), missing_acc[:-2], self.add_prod_uuid_edit_box.text())
 
-        self.add_prod_problem_edit_box.setText("")
-        self.add_prod_description_text_box.clear()
+        self.add_prod_problem_edit_box.clear()
         self.add_prod_sn_edit_box.setText("")
         self.add_prod_uuid_edit_box.setText(generate_uuid())
         for i in range(0, self.add_prod_acc_text_box.count()):
@@ -340,5 +334,4 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     GUI = MainWindow()
-    generate_pdf("HOLA", 1)
     app.exec_()
