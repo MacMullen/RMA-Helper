@@ -1,10 +1,9 @@
-from PyQt5.QtGui import *
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from uuid import uuid4
 import csv
 import json
-
 import os
 
 
@@ -63,11 +62,11 @@ def brand_exists(brand):
 
 
 def generate_uuid():
-    uuid = str(uuid4())
+    uuid = str(uuid4())[:8]
     data = json.load(open('database/uuid.json'))
     while uuid in data:
         uuid = str(uuid4())
-    return uuid
+    return uuid.upper()
 
 
 def save_uuid(uuid):
@@ -105,10 +104,33 @@ def save_product_to_csv(brand, product, problem, description, sn, missing_acc, u
         os.mkdir('database/archive/active')
     if not os.path.isfile('database/archive/active/' + company_name + '.csv'):
         file = open('database/archive/active/' + company_name + '.csv', "w+")
-        file.write("uuid,brand,product,problem,description,sn,missing_acc\n")
+        file.write("UUID,Brand,Product,Problem,Description,Serial Number,Missing Accesories\n")
         file.close()
     with open('database/archive/active/' + company_name + '.csv', 'a') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csv_writer.writerow([uuid, brand, product, problem, description, sn, missing_acc])
 
     save_uuid(uuid)
+
+
+def valid_status(company):
+    result = []
+    if os.path.isfile('database/archive/active/' + company + '.csv'):
+        result.append("Active")
+    if os.path.isfile('database/archive/sent/' + company + '.csv'):
+        result.append("Sent")
+    if os.path.isfile('database/archive/returned/' + company + '.csv'):
+        result.append("Returned")
+
+    return result
+
+
+def read_csv_file(status, company):
+    model = QtGui.QStandardItemModel()
+    with open('database/archive/' + status.lower() + '/' + company + '.csv', "r") as csv_file:
+        reader = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        model.setHorizontalHeaderLabels(next(reader))
+        for row in reader:
+            items = [QtGui.QStandardItem(field) for field in row]
+            model.appendRow(items)
+    return model

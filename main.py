@@ -1,10 +1,5 @@
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 import sys
-import uuid
 from utilties import *
-import os
 
 
 def center(main_window: QMainWindow):
@@ -16,11 +11,13 @@ def center(main_window: QMainWindow):
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        super(MainWindow, self).__init__()
+        self.model = QtGui.QStandardItemModel()
         self.companies = load_companies_json()
         self.brands = load_brands_json()
         super(MainWindow, self).__init__()
         self.resize(1280, 720)
-        self.setWindowTitle("PyBank")
+        self.setWindowTitle("RMA Helper")
         center(self)
         self.main_widget = QStackedWidget()
         self.setCentralWidget(self.main_widget)
@@ -186,6 +183,9 @@ class MainWindow(QMainWindow):
         change_status_button = QPushButton("Change Status")
 
         self.invoice_company_edit_box.addItems(self.companies)
+        self.invoice_company_edit_box.setCurrentIndex(-1)
+        self.invoice_company_edit_box.activated.connect(self.show_status)
+        self.invoice_status_combo_box.activated.connect(self.csv_file_view)
 
         base_layout.addWidget(company_label)
         base_layout.addWidget(self.invoice_company_edit_box)
@@ -303,14 +303,14 @@ class MainWindow(QMainWindow):
             self.add_prod_problem_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
             return
 
-        missing_acc = []
+        missing_acc = ""
         for i in range(0, self.add_prod_acc_text_box.count()):
             if self.add_prod_acc_text_box.item(i).checkState() == Qt.Unchecked:
-                missing_acc.append(self.add_prod_acc_text_box.item(i).text())
+                missing_acc += (self.add_prod_acc_text_box.item(i).text()) + ", "
 
         save_product_to_csv(self.add_prod_brand_combo_box.currentText(), self.add_prod_product_combo_box.currentText(),
                             self.add_prod_problem_edit_box.text(), self.add_prod_description_text_box.toPlainText(),
-                            self.add_prod_sn_edit_box.text(), missing_acc, self.add_prod_uuid_edit_box.text())
+                            self.add_prod_sn_edit_box.text(), missing_acc[:-2], self.add_prod_uuid_edit_box.text())
 
         self.add_prod_problem_edit_box.setText("")
         self.add_prod_description_text_box.clear()
@@ -318,6 +318,20 @@ class MainWindow(QMainWindow):
         self.add_prod_uuid_edit_box.setText(generate_uuid())
         for i in range(0, self.add_prod_acc_text_box.count()):
             self.add_prod_acc_text_box.item(i).setCheckState(Qt.Unchecked)
+
+    def show_status(self):
+        self.model.clear()
+        self.invoice_status_combo_box.clear()
+        self.invoice_status_combo_box.addItems(valid_status(self.invoice_company_edit_box.currentText()))
+        self.invoice_status_combo_box.setCurrentIndex(-1)
+
+    def csv_file_view(self):
+        self.model = read_csv_file(self.invoice_status_combo_box.currentText(),
+                                   self.invoice_company_edit_box.currentText())
+        self.invoice_table_view.setModel(self.model)
+        self.invoice_table_view.setSortingEnabled(True)
+        self.invoice_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
