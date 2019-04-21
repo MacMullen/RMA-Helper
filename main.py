@@ -177,22 +177,25 @@ class MainWindow(QMainWindow):
         status_label = QLabel("Status")
         self.invoice_status_combo_box = QComboBox()
         self.invoice_table_view = QTableView()
-        print_button = QPushButton("Print Invoice")
+        self.print_button = QPushButton("Print Invoice")
         change_status_label = QLabel("Change Status")
         self.invoice_change_status_combo_box = QComboBox()
         change_status_button = QPushButton("Change Status")
 
+        self.print_button.setDisabled(True)
         self.invoice_company_edit_box.addItems(self.companies)
         self.invoice_company_edit_box.setCurrentIndex(-1)
         self.invoice_company_edit_box.activated.connect(self.show_status)
         self.invoice_status_combo_box.activated.connect(self.csv_file_view)
+        self.print_button.clicked.connect(lambda: generate_pdf(self.invoice_company_edit_box.currentText(),
+                                                               self.invoice_status_combo_box.currentText()))
 
         base_layout.addWidget(company_label)
         base_layout.addWidget(self.invoice_company_edit_box)
         base_layout.addWidget(status_label)
         base_layout.addWidget(self.invoice_status_combo_box)
         base_layout.addWidget(self.invoice_table_view)
-        base_layout.addWidget(print_button, alignment=Qt.AlignRight)
+        base_layout.addWidget(self.print_button, alignment=Qt.AlignRight)
         base_layout.addWidget(change_status_label)
         base_layout.addWidget(self.invoice_change_status_combo_box)
         base_layout.addWidget(change_status_button, alignment=Qt.AlignRight)
@@ -331,9 +334,11 @@ class MainWindow(QMainWindow):
         self.invoice_table_view.setModel(self.model)
         self.invoice_table_view.setSortingEnabled(True)
         self.invoice_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.print_button.setEnabled(True)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     GUI = MainWindow()
+    generate_pdf("HOLA", 1)
     app.exec_()
