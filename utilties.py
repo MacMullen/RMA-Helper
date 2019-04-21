@@ -2,7 +2,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from uuid import uuid4
-import sys
+import csv
 import json
 
 import os
@@ -84,3 +84,31 @@ def show_products_from(brand):
         result.append(entry)
 
     return result
+
+
+def show_accesories_from(product, brand):
+    data = json.load(open('database/products.json'))
+    result = []
+    for acc in data[brand][product]["accesories"]:
+        list_widget = QListWidgetItem(acc)
+        list_widget.setCheckState(Qt.Unchecked)
+        result.append(list_widget)
+
+    return result
+
+
+def save_product_to_csv(brand, product, problem, description, sn, missing_acc, uuid):
+    data = json.load(open('database/products.json'))
+    company_name = data[brand][product]["company"]
+    if not os.path.isdir('database/archive'):
+        os.mkdir('database/archive')
+        os.mkdir('database/archive/active')
+    if not os.path.isfile('database/archive/active/' + company_name + '.csv'):
+        file = open('database/archive/active/' + company_name + '.csv', "w+")
+        file.write("uuid,brand,product,problem,description,sn,missing_acc\n")
+        file.close()
+    with open('database/archive/active/' + company_name + '.csv', 'a') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        csv_writer.writerow([uuid, brand, product, problem, description, sn, missing_acc])
+
+    save_uuid(uuid)

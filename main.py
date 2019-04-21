@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         sn_label = QLabel("Serial Number")
         self.add_prod_sn_edit_box = QLineEdit()
         acc_label = QLabel("Accesories")
-        self.add_prod_acc_text_box = QTextEdit()
+        self.add_prod_acc_text_box = QListWidget()
         uuid_label = QLabel("UUID")
         self.add_prod_uuid_edit_box = QLineEdit()
         self.add_prod_uuid_edit_box.setReadOnly(True)
@@ -69,6 +69,9 @@ class MainWindow(QMainWindow):
         self.add_prod_brand_combo_box.addItems(load_brands_json())
         self.add_prod_brand_combo_box.setCurrentIndex(-1)
         self.add_prod_brand_combo_box.activated.connect(self.show_products)
+        self.add_prod_product_combo_box.activated.connect(self.show_accesories)
+        save_button.clicked.connect(self.add_new_product)
+
         base_layout.addWidget(brand_label)
         base_layout.addWidget(self.add_prod_brand_combo_box)
         base_layout.addWidget(product_label)
@@ -182,6 +185,8 @@ class MainWindow(QMainWindow):
         self.invoice_change_status_combo_box = QComboBox()
         change_status_button = QPushButton("Change Status")
 
+        self.invoice_company_edit_box.addItems(self.companies)
+
         base_layout.addWidget(company_label)
         base_layout.addWidget(self.invoice_company_edit_box)
         base_layout.addWidget(status_label)
@@ -278,8 +283,41 @@ class MainWindow(QMainWindow):
         self.new_prod_acc_edit_box.setText("")
 
     def show_products(self):
-        if self.add_prod_product_combo_box.count() == 0:
-            self.add_prod_product_combo_box.addItems(show_products_from(self.add_prod_brand_combo_box.currentText()))
+        self.add_prod_brand_combo_box.setStyleSheet("background: white;")
+        self.add_prod_product_combo_box.clear()
+        self.add_prod_product_combo_box.addItems(show_products_from(self.add_prod_brand_combo_box.currentText()))
+        self.add_prod_product_combo_box.setCurrentIndex(-1)
+
+    def show_accesories(self):
+        self.add_prod_acc_text_box.clear()
+        accesories = show_accesories_from(self.add_prod_product_combo_box.currentText(),
+                                          self.add_prod_brand_combo_box.currentText())
+        for acc in accesories:
+            self.add_prod_acc_text_box.addItem(acc)
+
+    def add_new_product(self):
+        if self.add_prod_brand_combo_box.currentIndex() == -1:
+            self.add_prod_brand_combo_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            return
+        if self.add_prod_problem_edit_box.text() == "":
+            self.add_prod_problem_edit_box.setStyleSheet("background: rgba(255,0,0,0.2);")
+            return
+
+        missing_acc = []
+        for i in range(0, self.add_prod_acc_text_box.count()):
+            if self.add_prod_acc_text_box.item(i).checkState() == Qt.Unchecked:
+                missing_acc.append(self.add_prod_acc_text_box.item(i).text())
+
+        save_product_to_csv(self.add_prod_brand_combo_box.currentText(), self.add_prod_product_combo_box.currentText(),
+                            self.add_prod_problem_edit_box.text(), self.add_prod_description_text_box.toPlainText(),
+                            self.add_prod_sn_edit_box.text(), missing_acc, self.add_prod_uuid_edit_box.text())
+
+        self.add_prod_problem_edit_box.setText("")
+        self.add_prod_description_text_box.clear()
+        self.add_prod_sn_edit_box.setText("")
+        self.add_prod_uuid_edit_box.setText(generate_uuid())
+        for i in range(0, self.add_prod_acc_text_box.count()):
+            self.add_prod_acc_text_box.item(i).setCheckState(Qt.Unchecked)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
